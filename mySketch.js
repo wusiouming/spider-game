@@ -444,13 +444,15 @@ function startRecording() {
       facingMode: { ideal: "environment" }
     }
   };
-
+	
+/*
   if (!cam) {
     cam = createCapture(constraints);
     cam.size(windowWidth, windowHeight);
     cam.hide();
   }
-
+*/
+	
   getAudioContext().resume().then(() => {
     if (session !== recordingSession) return;
 
