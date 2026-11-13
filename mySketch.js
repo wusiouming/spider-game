@@ -486,6 +486,7 @@ function beginRecording(session) {
   previousAccumulatedScore = accumulatedScore;
   infoIcon.hide();
 
+  // 每一輪都建立全新的 Recorder 和 SoundFile
   recorder = new p5.SoundRecorder();
   recorder.setInput(mic);
 
@@ -497,38 +498,26 @@ function beginRecording(session) {
   inputButton.show();
   recordingGif.show();
 
-  // 不使用 record() 的 duration，改由 timeout 統一控制
+  console.log("開始錄音", {
+    session: session,
+    duration: duration
+  });
+
+  // 直接讓 p5.sound 控制錄音長度
   recorder.record(
     recordedSound,
-    undefined,
-    () => finishedRecording(session)
-  );
-
-  recordingTimeout = setTimeout(() => {
-    if (
-      session === recordingSession &&
-      isRecording &&
-      recorder
-    ) {
-      console.log("錄音時間到，停止錄音");
-      recorder.stop();
+    duration,
+    () => {
+      console.log("p5.sound 錄音時間到，執行完成 callback");
+      finishedRecording(session);
     }
-  }, duration * 1000);
+  );
 }
-
 
 function finishedRecording(session) {
   if (session !== recordingSession || !isRecording) return;
-
   isRecording = false;
-
-  if (recordingTimeout) {
-    clearTimeout(recordingTimeout);
-    recordingTimeout = null;
-  }
-
-  console.log("錄音完成");
-
+  console.log("錄音完成，準備播放", session);
   recordingGif.hide();
   inputButton.hide();
 
@@ -538,16 +527,13 @@ function finishedRecording(session) {
   if (song && song.buffer && song.buffer.length > 0) {
     downloadReady = true;
     downloadButton.show();
-
     setupWeb();
-
-    // 只有錄音完成後，才開始播放
+    // 錄音完成後才播放
     song.play();
 
     loop();
   } else {
     console.error("錄音檔案尚未完成");
-
     inputButton.html("Catch Sound");
     inputButton.show();
   }
